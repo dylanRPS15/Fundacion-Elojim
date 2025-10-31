@@ -55,7 +55,7 @@ export default function RefuerzoForm({ program, onClose }) {
   const { isSubmitting, handleSubmit } = useFormSubmit({
     programId: "refuerzo-escolar", // <--- ¡Importante! Nuevo programId
     onSuccess: onClose,
-    successDescription: `Has inscrito correctamente al niño/a en las jornadas de refuerzo.`,
+    successDescription: `Has inscrito correctamente al niño/a en el programa ${program.title}.`,
   });
 
   const handleChange = (e) => {

@@ -138,3 +138,139 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.25s ease-out;
+}
+
+html, body {
+  overflow-y: auto !important;
+}
+
+/* === Animaciones del Navbar === */
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Aplica a los enlaces del menú móvil */
+.animate-slide-in {
+  animation: slide-in 0.35s ease forwards;
+}
+
+/* Transiciones suaves en los enlaces */
+.link-fade {
+  animation: fadeInUp 0.3s ease forwards;
+}
+
+
+/* ===== Animación "border wrap" para los ítems del navbar ===== */
+
+.nav-item {
+  position: relative;
+  display: inline-block;
+  padding: 4px 0;
+  transition: color 0.3s ease;
+}
+
+.nav-item::before,
+.nav-item::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background-color: #1B3C8C; /* color institucional */
+  transition: all 0.25s ease;
+}
+
+.nav-item::before {
+  left: 0;
+  bottom: 0;
+}
+
+.nav-item::after {
+  right: 0;
+  top: 0;
+}
+
+.nav-item:hover {
+  color: #1B3C8C;
+}
+
+/* Pseudo-elementos extra para los laterales */
+.nav-item span::before,
+.nav-item span::after {
+  content: "";
+  position: absolute;
+  width: 2px;
+  height: 0;
+  background-color: #1B3C8C;
+  transition: all 0.25s ease;
+}
+
+.nav-item span::before {
+  left: 0;
+  top: 0;
+}
+
+.nav-item span::after {
+  right: 0;
+  bottom: 0;
+}
+
+/* Al hacer hover, animar las 4 líneas */
+.nav-item:hover::before,
+.nav-item:hover::after {
+  width: 100%;
+}
+
+.nav-item:hover span::before,
+.nav-item:hover span::after {
+  height: 100%;
+}
+
+/* Posición interna para envolver el texto */
+.nav-item span {
+  position: relative;
+  display: inline-block;
+  padding: 0 4px;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap');
+
+body { font-family: 'Inter', sans-serif; }
+.font-serif { font-family: 'Playfair Display', serif; }

@@ -68,7 +68,7 @@ export default function PostsPage() {
   }, []);
 
   if (loading) {
-    return <div>Loading posts...</div>;
+    return <div>Cargando posts...</div>;
   }
 
   return (
@@ -95,35 +95,73 @@ export default function PostsPage() {
       </Breadcrumb>
 
       <div className="mt-6">
-        <h2 className="text-2xl font-semibold">Todos los Posts</h2>
-        <table className="min-w-full table-auto mt-4">
-          <thead>
-            <tr>
-              {/* <th className="py-2 px-4 border-b">ID</th> */}
-              <th className="py-2 px-4 border-b">Titulo</th>
-              <th className="py-2 px-4 border-b">Contenido</th>
-              <th className="py-2 px-4 border-b">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {posts.map((post) => (
-              <tr key={post.id}>
-                {/* <td className="py-2 px-4 border-b">{post.id}</td> */}
-                <td className="py-2 px-4 border-b">{post.title}</td>
-                <td className="py-2 px-4 border-b">{post.content.slice(0, 150)}...</td>
-                <td className="py-2 px-4 border-b">
-                  <button
-                    onClick={() => handleDelete(post.id)}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          {/* Encabezado con botón de nueva noticia */}
+          <div className="flex items-center justify-between">
+            <h2 className="
+                text-4xl md:text-3xl font-extrabold tracking-tight 
+                text-gray-900
+                drop-shadow-[0_2px_4px_rgba(27,60,140,0.25)]
+                relative inline-block
+                after:content-[''] after:block after:h-[3px] after:w-50 
+                after:bg-gradient-to-r after:from-blue-300 after:to-gray-900
+                after:mx-auto after:mt-0 after:rounded-full
+                animate-fadeIn
+              ">
+                Noticias Publicadas</h2>
+            <Link
+              href="/admin/posts/new"
+              className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-400 bg-blue-200 hover:bg-gray-50 shadow-sm transition"
+            >
+              + Nueva noticia
+            </Link>
+          </div>
+
+          {/* Tabla de noticias */}
+          <div className="mt-5 overflow-x-auto">
+            <table className="min-w-full table-auto border-separate border-spacing-y-2">
+              <thead className="bg-blue-200">
+                <tr className="text-left text-sm font-semibold text-gray-600">
+                  <th className="py-2 px-4">Título</th>
+                  <th className="py-2 px-4">Contenido</th>
+                  <th className="py-2 px-4">Imágenes</th>
+                  <th className="py-2 px-4">Fecha de creación</th>
+                  <th className="py-2 px-4">Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {posts.length === 0 && (
+                  <tr>
+                    <td colSpan="5" className="text-center py-6 text-gray-500">
+                      No hay noticias registradas.
+                    </td>
+                  </tr>
+                )}
+
+                {posts.map((post) => (
+                  <tr key={post.id} className="bg-white hover:bg-gray-50 rounded-xl shadow-sm text-sm">
+                    <td className="py-3 px-4 font-medium text-gray-800">{post.title}</td>
+                    <td className="py-3 px-4 text-gray-600">
+                      {post.content ? post.content.slice(0, 120) + (post.content.length > 120 ? "…" : "") : "—"}
+                    </td>
+                    <td className="py-3 px-4">{Array.isArray(post.images) ? post.images.length : 0}</td>
+                    <td className="py-3 px-4">
+                      {post.createdAt ? new Date(post.createdAt).toLocaleDateString("es-CO") : "—"}
+                    </td>
+                    <td className="py-3 px-4">
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        className="text-red-600 hover:text-red-800 underline underline-offset-2"
+                      >
+                        Eliminar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
     </ContentLayout>
     </ProtectedAdmin>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import {
   Breadcrumb,
@@ -11,15 +12,25 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import ParticipantesModal from "@/components/admin-panel/ParticipantesModal";
+import { Search, Pencil, Trash2 } from "lucide-react";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
+import ParticipantesModal from "@/components/admin-panel/participantes-modal";
+import ModalEditEvento from "@/components/admin-panel/modal-edit-evento";
+import ConfirmDeleteModal from "@/components/admin-panel/confirm-delete-modal";
+import { useToast } from "@/hooks/use-toast";
+import { programs } from "@/data/programs";
 
 export default function EventosTallerSteamPage() {
   const programId = "taller-steam";
+  const { toast } = useToast();
 
   const [eventos, setEventos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [busqueda, setBusqueda] = useState("");
   const [eventoSeleccionado, setEventoSeleccionado] = useState(null);
   const [eventoEnEdicion, setEventoEnEdicion] = useState(null);
+  const [showDelete, setShowDelete] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -30,7 +41,8 @@ export default function EventosTallerSteamPage() {
     registered: "",
   });
 
-  const [busqueda, setBusqueda] = useState("");
+  const program = programs.find((p) => p.id === programId);
+  const Icon = program.icon;
 
   const fetchEventos = async () => {
     try {
@@ -40,301 +52,235 @@ export default function EventosTallerSteamPage() {
         const sorted = data.sort((a, b) => new Date(a.date) - new Date(b.date));
         setEventos(sorted);
       } else {
-        console.error("Error al obtener eventos");
+        toast({ title: "Error", description: "No se pudieron obtener los eventos.", variant: "destructive" });
       }
-    } catch (error) {
-      console.error("Error al obtener eventos", error);
+    } catch {
+      toast({ title: "Error", description: "No se pudo conectar con el servidor.", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (eventId) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este evento?")) return;
-
     try {
       const res = await fetch(`/api/eventos/${programId}?eventId=${eventId}`, {
         method: "DELETE",
       });
-
       if (res.ok) {
         setEventos((prev) => prev.filter((ev) => ev.id !== eventId));
-        alert("Evento eliminado correctamente");
+        toast({ title: "Evento eliminado", description: "El evento fue eliminado correctamente." });
       } else {
-        alert("Error al eliminar el evento");
+        toast({ title: "Error", description: "No se pudo eliminar el evento.", variant: "destructive" });
       }
-    } catch (error) {
-      console.error("Error al eliminar el evento", error);
-      alert("Error al eliminar el evento");
+    } catch {
+      toast({ title: "Error", description: "Error de conexión con el servidor.", variant: "destructive" });
     }
   };
 
+  useEffect(() => { fetchEventos(); }, []);
+
   useEffect(() => {
-    fetchEventos();
+    const evtSource = new EventSource("/api/inscripciones-evento/stream");
+    evtSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.programId !== programId) return;
+        fetchEventos();
+      } catch (err) {
+        console.error("Error SSE:", err);
+      }
+    };
+    evtSource.onerror = () => {
+      evtSource.close();
+      setTimeout(() => new EventSource("/api/inscripciones-evento/stream"), 5000);
+    };
+    return () => evtSource.close();
   }, []);
 
-  const eventosFiltrados = eventos.filter((ev) => {
-    const matchesBusqueda =
-      ev.title?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      ev.description?.toLowerCase().includes(busqueda.toLowerCase());
-    return matchesBusqueda;
-  });
+  const eventosFiltrados = eventos.filter((ev) =>
+    ev.title?.toLowerCase().includes(busqueda.toLowerCase()) ||
+    ev.description?.toLowerCase().includes(busqueda.toLowerCase())
+  );
 
-  if (loading) {
-    return <div className="p-4">Cargando eventos...</div>;
-  }
+  if (loading) return <div className="p-6">Cargando eventos...</div>;
 
   return (
-    <ContentLayout title="Eventos - Programa Taller Steam">
-      <Breadcrumb>
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/">Inicio</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbLink asChild>
-              <Link href="/admin">Dashboard</Link>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Eventos Programa Taller Steam</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+    <ProtectedAdmin>
+      <ContentLayout title={`Eventos – ${program.title}`}>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link href="/">Inicio</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild><Link href="/admin">Dashboard</Link></BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Eventos {program.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-      <div className="mt-6 max-w-4xl">
-        <div className="mb-6 space-y-4">
+        {/* Encabezado visual */}
+        <motion.div
+          className="mt-10 flex items-center justify-between p-6 rounded-2xl shadow-md border border-gray-200"
+          style={{ backgroundColor: program.bgColor }}
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="flex items-center gap-4">
+            <div
+              className="p-3 rounded-full shadow-sm"
+              style={{ backgroundColor: program.color }}
+            >
+              <Icon className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                {program.title} – Administración de Eventos
+              </h1>
+              <p className="text-sm text-gray-600">
+                Gestiona los eventos, inscripciones y detalles en tiempo real.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Buscador */}
+        <div className="relative max-w-md mt-10">
           <input
             type="text"
-            placeholder="Buscar por título o descripción"
+            placeholder="Buscar evento por título o descripción"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full rounded-md border border-gray-300 bg-white py-2 px-4 text-sm shadow-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="w-full rounded-lg border border-gray-300 bg-white py-2 pl-10 pr-4 text-sm shadow-sm placeholder:text-gray-400 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-200"
           />
+          <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+            <Search className="w-5 h-5" />
+          </div>
         </div>
 
-        <h2 className="text-2xl font-semibold mb-4">Eventos</h2>
-        <table className="min-w-full table-auto border border-gray-300">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="py-2 px-4 border border-gray-300 text-left">Título</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Descripción</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Fecha y Hora</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Ubicación</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Duración</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Capacidad</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Participantes</th>
-              <th className="py-2 px-4 border border-gray-300 text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {eventosFiltrados.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="text-center py-4 text-gray-500">
-                  No hay eventos que coincidan con los filtros.
-                </td>
+        {/* Tabla */}
+        <motion.div
+          className="mt-10 rounded-xl border border-gray-200 bg-white shadow-md overflow-hidden"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <table className="w-full border-collapse">
+            <thead className="bg-amber-100">
+              <tr className="text-gray-700 text-sm">
+                {["Título", "Descripción", "Fecha", "Ubicación", "Duración", "Capacidad", "Registrados", "Acciones"].map(
+                  (header) => (
+                    <th key={header} className="text-left py-3 px-4 font-semibold uppercase tracking-wide border-b border-gray-200">
+                      {header}
+                    </th>
+                  )
+                )}
               </tr>
-            ) : (
-              eventosFiltrados.map((ev) => (
-                <tr key={ev.id} className="text-sm">
-                  <td className="py-2 px-4 border border-gray-300">{ev.title}</td>
-                  <td className="py-2 px-4 border border-gray-300">
-                    {ev.description.length > 100
-                      ? ev.description.slice(0, 100) + "..."
-                      : ev.description}
-                  </td>
-                  <td className="py-2 px-4 border border-gray-300">
-                    {new Date(ev.date).toLocaleString("es-CO", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    })}
-                  </td>
-                  <td className="py-2 px-4 border border-gray-300">{ev.location}</td>
-                  <td className="py-2 px-4 border border-gray-300">{ev.duration}</td>
-                  <td className="py-2 px-4 border border-gray-300">{ev.capacity}</td>
-                  <td className="py-2 px-4 border border-gray-300">
-                    {ev.registered || 0}
-                    <div>
+            </thead>
+            <tbody>
+              {eventosFiltrados.length ? (
+                eventosFiltrados.map((ev) => (
+                  <tr key={ev.id} className="hover:bg-amber-50 transition text-sm border-b border-gray-100">
+                    <td className="py-2 px-4 font-medium">{ev.title}</td>
+                    <td className="py-2 px-4 text-gray-700">
+                      {ev.description.length > 90 ? ev.description.slice(0, 90) + "..." : ev.description}
+                    </td>
+                    <td className="py-2 px-4 text-gray-700">
+                      {new Date(ev.date).toLocaleString("es-CO", {
+                        dateStyle: "medium",
+                        timeStyle: "short",
+                      })}
+                    </td>
+                    <td className="py-2 px-4 text-gray-700">{ev.location}</td>
+                    <td className="py-2 px-4 text-gray-700">{ev.duration}</td>
+                    <td className="py-2 px-4 text-gray-700">{ev.capacity}</td>
+                    <td className="py-2 px-4 text-gray-700">
+                      <span className="px-3 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-700">
+                        {ev.registered}
+                      </span>
                       <button
                         onClick={() => setEventoSeleccionado(ev.id)}
-                        className="text-blue-600 text-xs hover:underline mt-1"
+                        className="block mt-1 text-xs text-amber-600 hover:underline"
                       >
                         Ver participantes
                       </button>
-                    </div>
-                  </td>
-                  <td className="py-2 px-4 border border-gray-300 space-x-2">
-                    <button
-                      onClick={() => {
-                        setEventoEnEdicion(ev);
-                        setFormData({
-                          title: ev.title || "",
-                          description: ev.description || "",
-                          date: new Date(ev.date).toISOString().slice(0, 16),
-                          location: ev.location || "",
-                          duration: ev.duration || "",
-                          capacity: ev.capacity?.toString() || "",
-                          registered: ev.registered?.toString() || "0",
-                        });
-                      }}
-                      className="text-blue-600 hover:underline"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(ev.id)}
-                      className="text-red-600 hover:underline"
-                    >
-                      Eliminar
-                    </button>
+                    </td>
+                    <td className="py-2 px-4 flex gap-2">
+                      <button
+                        onClick={() => {
+                          setEventoEnEdicion(ev);
+                          setFormData({
+                            title: ev.title,
+                            description: ev.description,
+                            date: new Date(ev.date).toISOString().slice(0, 16),
+                            location: ev.location,
+                            duration: ev.duration,
+                            capacity: ev.capacity?.toString(),
+                          });
+                        }}
+                        className="p-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-600"
+                        title="Editar"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPendingDeleteId(ev.id);
+                          setShowDelete(true);
+                        }}
+                        className="p-2 rounded-lg bg-red-50 hover:bg-red-100 text-red-600"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="text-center text-gray-500 py-6 italic">
+                    No hay eventos que coincidan con los filtros.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        </motion.div>
 
-        {eventoEnEdicion && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-lg max-w-xl w-full relative">
-              <button
-                onClick={() => setEventoEnEdicion(null)}
-                className="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-xl"
-                aria-label="Cerrar"
-              >
-                ×
-              </button>
-              <h3 className="text-lg font-semibold mb-4">Editar Evento</h3>
-              <form
-                onSubmit={async (e) => {
-                  e.preventDefault();
-                  try {
-                    const requestData = {
-                      id: eventoEnEdicion.id,
-                      title: formData.title,
-                      description: formData.description,
-                      date: formData.date,
-                      location: formData.location,
-                      duration: formData.duration,
-                      capacity: Number(formData.capacity),
-                      registered: Number(formData.registered),
-                    };
+        {/* Modales */}
+        <ModalEditEvento
+          open={!!eventoEnEdicion}
+          onClose={() => setEventoEnEdicion(null)}
+          evento={eventoEnEdicion}
+          onSave={fetchEventos}
+          programId={programId}
+        />
 
-                    const res = await fetch(`/api/eventos/${programId}`, {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify(requestData),
-                    });
+        <ParticipantesModal
+          eventoId={eventoSeleccionado}
+          open={!!eventoSeleccionado}
+          onClose={() => setEventoSeleccionado(null)}
+        />
 
-                    if (res.ok) {
-                      fetchEventos();
-                      setEventoEnEdicion(null);
-                      alert("Evento actualizado correctamente");
-                    } else {
-                      const errorData = await res.json();
-                      alert(`Error al actualizar: ${errorData.message || "Error desconocido"}`);
-                    }
-                  } catch (err) {
-                    console.error("Error al actualizar", err);
-                    alert("Error al actualizar el evento");
-                  }
-                }}
-                className="space-y-4"
-              >
-                <input
-                  type="text"
-                  placeholder="Título"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                />
-                <textarea
-                  placeholder="Descripción"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                />
-                <input
-                  type="datetime-local"
-                  value={formData.date}
-                  onChange={(e) =>
-                    setFormData({ ...formData, date: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                  required
-                />
-                <input
-                  type="text"
-                  placeholder="Ubicación"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                />
-                <input
-                  type="text"
-                  placeholder="Duración"
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                />
-                <input
-                  type="number"
-                  placeholder="Capacidad"
-                  value={formData.capacity}
-                  onChange={(e) =>
-                    setFormData({ ...formData, capacity: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                />
-                <input
-                  type="number"
-                  placeholder="Participantes"
-                  value={formData.registered}
-                  onChange={(e) =>
-                    setFormData({ ...formData, registered: e.target.value })
-                  }
-                  className="w-full px-3 py-2 border rounded"
-                />
-                <div className="flex justify-end gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setEventoEnEdicion(null)}
-                    className="text-gray-600 underline"
-                  >
-                    Cancelar
-                  </button>
-                  <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  >
-                    Guardar cambios
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <ParticipantesModal
-        eventoId={eventoSeleccionado}
-        open={!!eventoSeleccionado}
-        onClose={() => setEventoSeleccionado(null)}
-      />
-    </ContentLayout>
+        <ConfirmDeleteModal
+          open={showDelete}
+          title="Eliminar evento"
+          onClose={() => {
+            setShowDelete(false);
+            setPendingDeleteId(null);
+          }}
+          onConfirm={async () => {
+            await handleDelete(pendingDeleteId);
+            setShowDelete(false);
+            setPendingDeleteId(null);
+          }}
+        />
+      </ContentLayout>
+    </ProtectedAdmin>
   );
 }

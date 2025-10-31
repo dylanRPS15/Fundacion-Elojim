@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { EstratoSocial, GrupoEtnico } from "@prisma/client";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { getServerSession } from "next-auth";
+import { sendRegistroUpdate } from "../stream/route"; // 🔹 Importa el emisor SSE
+import { sendEventoUpdate } from "@/app/api/inscripciones-evento/stream/route";
 
 const ESTRATOS_VALIDOS = Object.values(EstratoSocial);
 const GRUPOS_ETNICOS_VALIDOS = Object.values(GrupoEtnico);
@@ -98,6 +100,12 @@ export async function POST(request) {
       },
     });
 
+    sendRegistroUpdate({
+      action: "created",
+      programId: "taller-steam",
+      userId: userId,
+    });
+
     return NextResponse.json(nuevoRegistro, { status: 201 });
   } catch (error) {
     console.error("Error al registrar taller STEAM:", error);
@@ -141,9 +149,45 @@ export async function DELETE(req) {
       return new Response("Registro no encontrado", { status: 404 });
     }
 
-    await prisma.RegistroTallerSteam.delete({
-      where: { id },
+
+    // 🔹 Obtener las inscripciones que se van a eliminar (para actualizar contadores)
+    const inscripciones = await prisma.inscripcionPorEvento.findMany({
+      where: {
+        programId: "semillero-innovacion",
+        userId: registro.userId,
+      },
+      select: { id: true, eventoId: true },
     });
+
+    await prisma.$transaction([
+      prisma.inscripcionPorEvento.deleteMany({
+        where: { programId: "semillero-innovacion", userId: registro.userId },
+      }),
+      prisma.registroSemilleroInnovacion.delete({ where: { id } }),
+       // 🔹 Decrementar contador "registered" en cada evento afectado
+      ...inscripciones.map((i) =>
+        prisma.evento.update({
+          where: { id: i.eventoId },
+          data: { registered: { decrement: 1 } },
+        })
+      ),
+    ]);
+
+    sendRegistroUpdate({
+      action: "deleted",
+      programId: "taller-steam",
+      userId: registro.userId,
+    });
+
+    for (const insc of inscripciones) {
+      sendEventoUpdate({
+        action: "deleted",
+        eventoId: insc.eventoId,
+        programId: "taller-steam",
+        inscripcionId: insc.id,
+        userId: registro.userId,
+      });
+    }
 
     return new Response("Registro eliminado exitosamente", { status: 200 });
   } catch (error) {

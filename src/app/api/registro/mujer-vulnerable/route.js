@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { sendRegistroUpdate } from "../stream/route"; // 🔹 Importa el emisor SSE
+import { sendEventoUpdate } from "@/app/api/inscripciones-evento/stream/route";
 
 
 import {
@@ -145,6 +147,12 @@ export async function POST(request) {
         aceptaTerminos: Boolean(data.aceptaTerminos),
       },
     });
+    
+    sendRegistroUpdate({
+      action: "created",
+      programId: "mujer-vulnerable",
+      userId: usuario.id,
+    });
 
     return NextResponse.json(nuevoRegistro, { status: 201 });
   } catch (error) {
@@ -159,7 +167,7 @@ export async function POST(request) {
   }
 }
 
-export async function GET() {
+export async function GET() { 
   try {
     const registros = await prisma.registroMujerVulnerable.findMany({
       orderBy: { id: "desc" },
@@ -187,9 +195,44 @@ export async function DELETE(req) {
       return new Response("Registro no encontrado", { status: 404 });
     }
 
-    await prisma.registroMujerVulnerable.delete({
-      where: { id },
+    // 🔹 Obtener las inscripciones que se van a eliminar (para actualizar contadores)
+    const inscripciones = await prisma.inscripcionPorEvento.findMany({
+      where: {
+        programId: "mujer-vulnerable",
+        userId: registro.userId,
+      },
+      select: { id: true, eventoId: true },
     });
+
+    await prisma.$transaction([
+      prisma.inscripcionPorEvento.deleteMany({
+        where: { programId: "mujer-vulnerable", userId: registro.userId },
+      }),
+      prisma.registroMujerVulnerable.delete({ where: { id } }),
+       // 🔹 Decrementar contador "registered" en cada evento afectado
+      ...inscripciones.map((i) =>
+        prisma.evento.update({
+          where: { id: i.eventoId },
+          data: { registered: { decrement: 1 } },
+        })
+      ),
+    ]);
+
+    sendRegistroUpdate({
+      action: "deleted",
+      programId: "mujer-vulnerable",
+      userId: registro.userId,
+    });
+
+    for (const insc of inscripciones) {
+      sendEventoUpdate({
+        action: "deleted",
+        eventoId: insc.eventoId,
+        programId: "mujer-vulnerable",
+        inscripcionId: insc.id,
+        userId: registro.userId,
+      });
+    }
 
     return new Response("Registro eliminado exitosamente", { status: 200 });
   } catch (error) {

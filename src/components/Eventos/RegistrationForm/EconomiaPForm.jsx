@@ -41,11 +41,11 @@ export default function EconomiaPForm({ program, onClose }) {
     direccion: "",
 
     // Situación Económica y Laboral
-    esPensionado: "no",
+    esPensionado: false,
     actividadEconomica: "",
-    trabajoAnterior: "no",
+    trabajoAnterior: false,
     sectorTrabajo: "",
-    ingresosAdicionales: "no",
+    ingresosAdicionales: false,
     fuenteIngresos: "",
 
     // Intereses y Habilidades
@@ -65,7 +65,7 @@ export default function EconomiaPForm({ program, onClose }) {
   const { isSubmitting, handleSubmit } = useFormSubmit({
     programId: "economia-plateada",
     onSuccess: onClose,
-    successDescription: `Te has inscrito correctamente en el Programa Economía Plateada.`,
+    successDescription: `Te has inscrito correctamente como voluntario en ${program.title}.`,
   });
 
   const handleChange = (e) => {
@@ -193,7 +193,7 @@ export default function EconomiaPForm({ program, onClose }) {
               required
             />
 
-            {formData.esPensionado === "no" && (
+            {!formData.esPensionado && (
               <div className="space-y-2">
                 <Label htmlFor="actividadEconomica">
                   En caso de no ser pensionado/a, ¿cuál es su actividad
@@ -216,7 +216,7 @@ export default function EconomiaPForm({ program, onClose }) {
               required
             />
 
-            {formData.trabajoAnterior === "si" && (
+            {formData.trabajoAnterior && (
               <div className="space-y-2">
                 <Label htmlFor="sectorTrabajo">
                   Si la respuesta es sí, ¿en qué sector(es)?
@@ -238,7 +238,7 @@ export default function EconomiaPForm({ program, onClose }) {
               required
             />
 
-            {formData.ingresosAdicionales === "si" && (
+            {formData.ingresosAdicionales && (
               <div className="space-y-2">
                 <Label htmlFor="fuenteIngresos">
                   Si la respuesta es sí, ¿de qué fuente(s)?

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { sendRegistroUpdate } from "../stream/route"; // 🔹 Importa el emisor SSE
+import { sendEventoUpdate } from "@/app/api/inscripciones-evento/stream/route";
 
 import {
   EstratoSocial,
@@ -109,7 +111,7 @@ export async function POST(request) {
     validarDatos(data);
 
     const {
-      otrasAreasInteres, // ❌ no existe en el modelo
+      otrasAreasInteres, //  no existe en el modelo
       ...restData
     } = data;
    
@@ -124,7 +126,7 @@ export async function POST(request) {
       console.error(`Error al registrar participante cultural: El documento de identidad '${data.documentoIdentidad}' ya está registrado.`);
       return NextResponse.json(
         { error: "El documento de identidad ya está registrado." },
-        { status: 409 } // Código de estado para conflicto (recurso ya existe)
+        { status: 409 } // Código de estado para conflicto
       );
     }
 
@@ -139,6 +141,11 @@ export async function POST(request) {
       },
     });
 
+    sendRegistroUpdate({
+          action: "created",
+          programId: "cultural",
+          userId: userId,
+        });
     
     return NextResponse.json(nuevoRegistro, { status: 201 });
   } catch (error) {
@@ -181,9 +188,44 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "Registro no encontrado" }, { status: 404 });
     }
 
-    await prisma.registroCultural.delete({
-      where: { id },
+    // 🔹 Obtener las inscripciones que se van a eliminar (para actualizar contadores)
+    const inscripciones = await prisma.inscripcionPorEvento.findMany({
+      where: {
+        programId: "economia-plateada",
+        userId: registro.userId,
+      },
+      select: { id: true, eventoId: true },
     });
+
+    await prisma.$transaction([
+      prisma.inscripcionPorEvento.deleteMany({
+        where: { programId: "cultural", userId: registro.userId },
+      }),
+      prisma.registroCultural.delete({ where: { id } }),
+       // 🔹 Decrementar contador "registered" en cada evento afectado
+      ...inscripciones.map((i) =>
+        prisma.evento.update({
+          where: { id: i.eventoId },
+          data: { registered: { decrement: 1 } },
+        })
+      ),
+    ]);
+
+    sendRegistroUpdate({
+      action: "deleted",
+      programId: "cultural",
+      userId: registro.userId,
+    });
+
+     for (const insc of inscripciones) {
+      sendEventoUpdate({
+        action: "deleted",
+        eventoId: insc.eventoId,
+        programId: "cultural",
+        inscripcionId: insc.id,
+        userId: registro.userId,
+      });
+    }
 
     return NextResponse.json({ mensaje: "Registro eliminado correctamente" }, { status: 200 });
   } catch (error) {

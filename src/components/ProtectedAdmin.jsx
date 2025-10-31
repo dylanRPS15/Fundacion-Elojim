@@ -13,7 +13,7 @@ export default function ProtectedAdmin({ children }) {
     if (status === "loading") return; // Esperar a que cargue la sesión
     
     if (!session) {
-      router.push("/auth/login");
+      router.push("/access-denied");
     } else if (session.user.rolId !== 2) {
       router.push("/access-denied");
     }

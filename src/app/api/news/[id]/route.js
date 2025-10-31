@@ -5,7 +5,7 @@ const prisma = new PrismaClient()
 export async function GET(req, { params }) {
     try {
         // Asegúrate de que `params` sea resuelto
-        const { id } = await params;  // Resolviendo la promesa `params`
+        const { id } =  params;  // Resolviendo la promesa `params`
 
         const parsedId = parseInt(id);  // Convierte el id a un número entero
         if (isNaN(parsedId)) {

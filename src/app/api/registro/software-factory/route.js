@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { EstratoSocial, GrupoEtnico } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-
+import { sendRegistroUpdate } from "../stream/route"; // 🔹 Importa el emisor SSE
 
 // Enums válidos
 const ESTRATOS_VALIDOS = Object.values(EstratoSocial);
@@ -145,6 +145,13 @@ export async function POST(request) {
       },
     });
 
+    sendRegistroUpdate({
+      action: "created",
+      programId: "semillero-innovacion",
+      userId: userId,
+    });
+  
+
     return NextResponse.json(nuevoRegistro, { status: 201 });
 
   } catch (error) {
@@ -190,6 +197,12 @@ export async function DELETE(req) {
 
     await prisma.registroSoftwareFactory.delete({
       where: { id },
+    });
+
+    sendRegistroUpdate({
+      action: "deleted",
+      programId: "software-factory",
+      userId: registro.userId,
     });
 
     return new Response("Registro eliminado exitosamente", { status: 200 });

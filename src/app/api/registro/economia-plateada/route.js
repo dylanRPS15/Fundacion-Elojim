@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { EstratoSocial, GrupoEtnico, TipoDocumento, Genero } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { sendRegistroUpdate } from "../stream/route"; // 🔹 Importa el emisor SSEs
+import { sendEventoUpdate } from "@/app/api/inscripciones-evento/stream/route";
 
 // Enums válidos
 const ESTRATOS_VALIDOS = Object.values(EstratoSocial);
@@ -145,6 +147,12 @@ export async function POST(request) {
       },
     });
 
+    sendRegistroUpdate({
+          action: "created",
+          programId: "economia-plateada",
+          userId: userId,
+        });
+
     console.log("Registro de Economía Plateada creado exitosamente:", nuevoRegistro); // <--- LOG DEL REGISTRO EXITOSO
     return NextResponse.json(nuevoRegistro, { status: 201 });
   } catch (error) {
@@ -187,9 +195,44 @@ export async function DELETE(request) {
       return NextResponse.json({ error: "Registro no encontrado" }, { status: 404 });
     }
 
-    await prisma.registroEconomiaPlateada.delete({
-      where: { id },
+    // 🔹 Obtener las inscripciones que se van a eliminar (para actualizar contadores)
+    const inscripciones = await prisma.inscripcionPorEvento.findMany({
+      where: {
+        programId: "economia-plateada",
+        userId: registro.userId,
+      },
+      select: { id: true, eventoId: true },
     });
+
+    await prisma.$transaction([
+      prisma.inscripcionPorEvento.deleteMany({
+        where: { programId: "economia-plateada", userId: registro.userId },
+      }),
+      prisma.registroEconomiaPlateada.delete({ where: { id } }),
+       // 🔹 Decrementar contador "registered" en cada evento afectado
+      ...inscripciones.map((i) =>
+        prisma.evento.update({
+          where: { id: i.eventoId },
+          data: { registered: { decrement: 1 } },
+        })
+      ),
+    ]);
+
+    sendRegistroUpdate({
+      action: "deleted",
+      programId: "economia-plateada",
+      userId: registro.userId,
+    });
+
+    for (const insc of inscripciones) {
+      sendEventoUpdate({
+        action: "deleted",
+        eventoId: insc.eventoId,
+        programId: "economia-plateada",
+        inscripcionId: insc.id,
+        userId: registro.userId,
+      });
+    }
 
     return NextResponse.json({ mensaje: "Registro eliminado correctamente" }, { status: 200 });
   } catch (error) {

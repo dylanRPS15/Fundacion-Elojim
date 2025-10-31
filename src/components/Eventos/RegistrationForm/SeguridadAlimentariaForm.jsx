@@ -71,7 +71,7 @@ export default function SeguridadAlimentariaForm({ program, onClose }) {
   const { isSubmitting, handleSubmit } = useFormSubmit({
     programId: "seguridad-alimentaria", // Un ID único para este programa
     onSuccess: onClose,
-    successDescription: "Formulario enviado exitosamente.",
+    successDescription: `Te has inscrito correctamente como voluntario en ${program.title}.`,
     // Aquí puedes añadir un validationFn si necesitas validaciones extra en el frontend
   });
 

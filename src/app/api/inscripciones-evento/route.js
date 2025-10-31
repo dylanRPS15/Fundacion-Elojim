@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth"; // si usas next-auth
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { sendEventoUpdate } from "../inscripciones-evento/stream/route"; // 🔹 Importa el emisor SSE
 
 // Mapa de tablas por programa
 
@@ -94,9 +95,33 @@ export async function POST(req) {
       return NextResponse.json({ message: "Faltan datos" }, { status: 400 });
     }
 
+    const programIdMap = {
+      "mujer-vulnerable": "MUJER_VULNERABLE",
+      "semillero-innovacion": "SEMILLERO_INNOVACION",
+      "seguridad-alimentaria": "SEGURIDAD_ALIMENTARIA",
+      "cultural": "CULTURAL",
+      "voluntariado": "VOLUNTARIADO",
+      "economia-plateada": "ECONOMIA_PLATEADA",
+      "taller-steam": "TALLER_STEAM",
+      "refuerzo-escolar": "REFUERZO_ESCOLAR",
+      "software-factory": "SOFTWARE_FACTORY",
+    };
+
     const evento = await prisma.evento.findUnique({ where: { id: eventoId } });
     if (!evento) {
       return NextResponse.json({ message: "Evento no encontrado" }, { status: 404 });
+    }
+
+    const expectedProgramId = programIdMap[programId];
+    if (!expectedProgramId) {
+      return NextResponse.json({ message: `Programa inválido: ${programId}` }, { status: 400 });
+    }
+
+    if (evento.programId !== expectedProgramId) {
+      return NextResponse.json(
+        { message: `El evento ${eventoId} no pertenece al programa ${programId}` },
+        { status: 400 }
+      );
     }
 
     const count = await prisma.inscripcionPorEvento.count({ where: { eventoId } });
@@ -106,22 +131,35 @@ export async function POST(req) {
 
     const { nombreCompleto, numeroDocumento } = await getDatosDelRegistro(programId, userId);
 
-    await prisma.$transaction([
-      prisma.inscripcionPorEvento.create({
-        data: {
-          nombreCompleto,
-          numeroDocumento,
-          programId,
-          eventoId,
-        },
-      }),
-      prisma.evento.update({
-        where: { id: eventoId },
-        data: { registered: { increment: 1 } },
-      }),
-    ]);
+    const inscripcion = await prisma.inscripcionPorEvento.create({
+      data: {
+        userId,
+        nombreCompleto,
+        numeroDocumento,
+        programId,
+        eventoId,
+      },
+    });
 
-    return NextResponse.json({ message: "Inscripción realizada con éxito" }, { status: 201 });
+    // 🔹 Actualizar el contador del evento
+    await prisma.evento.update({
+      where: { id: eventoId },
+      data: { registered: { increment: 1 } },
+    });
+
+    // 🔹 Enviar el evento SSE con el ID de inscripción real
+    sendEventoUpdate({
+      action: "created",
+      eventoId,
+      programId,
+      userId: session?.user?.id,
+      inscripcionId: inscripcion.id, // ✅ agregar aquí
+    });
+
+    // 🔹 Responder con el ID correcto
+    return NextResponse.json(
+      { message: "Inscripción realizada con éxito", id: inscripcion.id },
+      { status: 201 });
   } catch (err) {
     console.error("Error en inscripción:", err);
     return NextResponse.json({ message: err.message || "Error interno" }, { status: 500 });

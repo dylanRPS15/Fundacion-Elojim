@@ -1,0 +1,1080 @@
+openapi: 3.0.0
+info:
+  title: ELOJIM API
+  description: API oficial del proyecto Fundación ELOJIM
+  version: "1.0.0"
+  contact:
+    name: Soporte ELOJIM
+    email: soporte@elojim.org
+
+servers:
+  - url: http://localhost:3000
+
+tags:
+  - name: Auth
+    description: Autenticación y manejo de usuarios
+  - name: Eventos
+    description: Gestión de eventos e inscripciones
+  - name: News
+    description: Publicación y consulta de noticias
+  - name: Registro
+    description: Programas de registro de la fundación
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+  schemas:
+    RegistroBase:
+      type: object
+      properties:
+        nombreCompleto:
+          type: string
+          example: "Laura Gómez"
+        fechaNacimiento:
+          type: string
+          format: date
+        edad:
+          type: integer
+        comuna:
+          type: string
+        estratoSocial:
+          type: string
+        grupoEtnico:
+          type: string
+        telefonoContacto:
+          type: string
+        correoElectronico:
+          type: string
+        direccion:
+          type: string
+        motivacion:
+          type: string
+        expectativas:
+          type: string
+        aceptaTerminos:
+          type: boolean
+      required:
+        - nombreCompleto
+        - fechaNacimiento
+        - comuna
+        - estratoSocial
+        - telefonoContacto
+        - correoElectronico
+        - aceptaTerminos
+
+    RegistroSemilleroInnovacion:
+      allOf:
+        - $ref: "#/components/schemas/RegistroBase"
+        - type: object
+          properties:
+            tipoDocumento:
+              type: string
+            numeroDocumento:
+              type: string
+            tipoVinculacion:
+              type: string
+            nombreEntidadVinculacion:
+              type: string
+            nivelEducativo:
+              type: string
+            participacionPrevia:
+              type: boolean
+            areasInteres:
+              type: array
+              items:
+                type: string
+            otrasAreas:
+              type: string
+            tieneProyecto:
+              type: boolean
+            descripcionProyecto:
+              type: string
+            habilidades:
+              type: string
+            disponibilidad:
+              type: string
+          example:
+            nombreCompleto: "Pablo Rodríguez"
+            tipoDocumento: "CE"
+            numeroDocumento: "1098765432"
+            comuna: "Comuna 8"
+            nivelEducativo: "Tecnica_Tecnologica"
+            areasInteres: ["Emprendimiento social", "Tecnología e innovación"]
+            descripcionProyecto: "Una app móvil para mujeres artesanas"
+            aceptaTerminos: true
+
+    RegistroSoftwareFactory:
+      allOf:
+        - $ref: "#/components/schemas/RegistroBase"
+        - type: object
+          properties:
+            tipoDocumento:
+              type: string
+            numeroDocumento:
+              type: string
+            modalidadVinculacion:
+              type: string
+            institucionEducativa:
+              type: string
+            programaAcademico:
+              type: string
+            semestreNivel:
+              type: string
+            tiempoDisponible:
+              type: string
+            tecnologias:
+              type: array
+              items:
+                type: string
+            proyectosRealizados:
+              type: string
+            areasInteres:
+              type: array
+              items:
+                type: string
+            experienciaAgile:
+              type: string
+          example:
+            nombreCompleto: "Alejandro Martínez"
+            modalidadVinculacion: "Pasantía"
+            institucionEducativa: "Universidad de Antioquia"
+            tecnologias: ["Desarrollo web", "Backend (Node.js)"]
+            aceptaTerminos: true
+
+    RegistroTallerSteam:
+      allOf:
+        - $ref: "#/components/schemas/RegistroBase"
+        - type: object
+          properties:
+            institucionEducativa:
+              type: string
+            cursoGrado:
+              type: string
+            nombreAcudiente:
+              type: string
+            relacionNino:
+              type: string
+            participacionPrevia:
+              type: boolean
+            actividadesInteres:
+              type: array
+              items:
+                type: string
+            otrasActividades:
+              type: string
+            disponibilidad:
+              type: string
+            accesoComputadora:
+              type: boolean
+            accesoInternet:
+              type: boolean
+            expectativa:
+              type: string
+          example:
+            nombreCompleto: "Camila Rodríguez"
+            actividadesInteres: ["Programación básica", "Ciencia y experimentos"]
+            accesoComputadora: true
+            expectativa: "Crear mi primer videojuego"
+            aceptaTerminos: true
+
+    RegistroVoluntariado:
+      allOf:
+        - $ref: "#/components/schemas/RegistroBase"
+        - type: object
+          properties:
+            tipoDocumento:
+              type: string
+            numeroDocumento:
+              type: string
+            nivelEducativo:
+              type: string
+            profesionOcupacion:
+              type: string
+            disponibilidadTipo:
+              type: string
+            diasEspecificos:
+              type: string
+            horasDisponibles:
+              type: integer
+            areasInteres:
+              type: array
+              items:
+                type: string
+            otrasAreas:
+              type: string
+            habilidades:
+              type: string
+            fundacion:
+              type: string
+            funcion:
+              type: string
+            tiempo:
+              type: string
+            referencia1Nombre:
+              type: string
+            referencia1Telefono:
+              type: string
+            referencia2Nombre:
+              type: string
+            referencia2Telefono:
+              type: string
+          example:
+            nombreCompleto: "Laura Martínez"
+            profesionOcupacion: "Psicóloga"
+            areasInteres: ["Educación", "Medio ambiente"]
+            habilidades: "Escucha activa, liderazgo"
+            aceptaTerminos: true
+
+    RegistroCultural:
+      allOf:
+        - $ref: "#/components/schemas/RegistroBase"
+        - type: object
+          properties:
+            documentoIdentidad:
+              type: string
+            municipioDepartamento:
+              type: string
+            nivelEducativo:
+              type: string
+            ocupacion:
+              type: string
+            areaInteresPrincipal:
+              type: string
+            formacionPrevia:
+              type: boolean
+            detalleFormacion:
+              type: string
+            perteneceGrupo:
+              type: boolean
+            detalleGrupo:
+              type: string
+            diasDisponibles:
+              type: string
+          example:
+            nombreCompleto: "Dylan Ramirez"
+            areaInteresPrincipal: "Musica"
+            formacionPrevia: true
+            perteneceGrupo: true
+            aceptaTerminos: true
+
+    RegistroEconomiaPlateada:
+      allOf:
+        - $ref: "#/components/schemas/RegistroBase"
+        - type: object
+          properties:
+            tipoDocumento:
+              type: string
+            numeroDocumento:
+              type: string
+            genero:
+              type: string
+            esPensionado:
+              type: boolean
+            actividadEconomica:
+              type: string
+            trabajoAnterior:
+              type: boolean
+            sectorTrabajo:
+              type: string
+            ingresosAdicionales:
+              type: boolean
+            fuenteIngresos:
+              type: string
+            areasInteres:
+              type: array
+              items:
+                type: string
+            otrasAreas:
+              type: string
+            habilidades:
+              type: string
+            tiempoSemanal:
+              type: string
+          example:
+            nombreCompleto: "Sandra Perdomo"
+            esPensionado: true
+            actividadEconomica: "Venta de productos naturales"
+            habilidades: "Manualidades y cocina"
+            aceptaTerminos: true
+    News:
+      type: object
+      properties:
+        titulo:
+          type: string
+        contenido:
+          type: string
+    Evento:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string  
+        date:
+          type: string
+          format: date
+        location:
+          type: string
+        duration:
+          type: string
+        capacity:
+          type: integer
+
+
+security:
+  - cookieAuth: []
+
+paths:
+  # -------------------------
+  # AUTH
+  # -------------------------
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Registrar usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "201":
+          description: Usuario registrado
+        "400":
+          description: Error en el registro
+
+  /api/auth/contacto:
+    post:
+      tags: [Auth]
+      summary: Enviar mensaje de contacto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre: { type: string }
+                email: { type: string }
+                mensaje: { type: string }
+      responses:
+        "200":
+          description: Mensaje enviado
+
+  /api/auth/debug-token:
+    get:
+      tags: [Auth]
+      summary: Verificar token de autenticación
+      responses:
+        "200":
+          description: Token válido
+        "401":
+          description: Token inválido o expirado
+
+  # -------------------------
+  # EVENTOS
+  # -------------------------
+  /api/eventos/{programId}:
+    get:
+      tags: [Eventos]
+      summary: Listar eventos por programa
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lista de eventos
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Evento" }
+    post:
+      tags: [Eventos]
+      summary: Crear un nuevo evento en el programa
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Evento" }
+      responses:
+        "201":
+          description: Evento creado
+
+    put:
+      tags: [Eventos]
+      summary: Actualizar un evento existente en el programa
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                title:
+                  type: string
+                description:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                location:
+                  type: string
+                duration:
+                  type: string
+                capacity:
+                  type: integer
+      responses:
+        "200":
+          description: Evento actualizado
+
+    delete:
+      tags: [Eventos]
+      summary: Eliminar un evento de un programa
+      parameters:
+        - name: programId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: eventId
+          in: query
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Evento eliminado
+
+  /api/inscripciones-evento:
+    post:
+      tags: [Eventos]
+      summary: Inscribirse a un evento
+      description: Requiere estar autenticado con sesión de NextAuth
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [programId, eventoId]
+              properties:
+                programId:
+                  type: string
+                  example: mujer-vulnerable
+                eventoId:
+                  type: integer
+                  example: 12
+      responses:
+        "201": { description: Inscripción realizada con éxito }
+        "401": { description: No autenticado }
+
+
+
+
+  /api/inscripciones-evento/{eventId}:
+    get:
+      tags: [Eventos]
+      summary: Listar inscripciones a un evento
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lista de inscripciones
+  
+  # -------------------------
+  # NEWS
+  # -------------------------
+  /api/news:
+    get:
+      tags: [News]
+      summary: Listar noticias
+      responses:
+        "200":
+          description: Lista de noticias
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/News" }
+    post:
+      tags: [News]
+      summary: Crear noticia
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/News" }
+      responses:
+        "201":
+          description: Noticia creada
+  
+    delete:
+      tags: [News]
+      summary: Eliminar noticia
+      description: Elimina una noticia existente por ID (pasado en el body). También elimina las imágenes asociadas en `public/uploads`.
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id]
+              properties:
+                id:
+                  type: integer
+                  example: 15
+      responses:
+        "200":
+          description: Noticia eliminada exitosamente
+        "404":
+          description: Noticia no encontrada
+        "401":
+          description: No autorizado
+        "500":
+          description: Error interno
+
+  /api/news/{id}:
+    get:
+      tags: [News]
+      summary: Obtener noticia por ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Noticia encontrada
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/News" }
+        "404":
+          description: No encontrada
+  # -------------------------
+  # REGISTRO (Programas)
+  # -------------------------
+  /api/registro/mujer-vulnerable:
+    get:
+      tags: [Registro]
+      summary: Listar registros de mujer vulnerable
+      responses:
+        "200":
+          description: Lista de registros
+
+    post:
+      tags: [Registro]
+      summary: Crear registro en mujer vulnerable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombreCompleto: { type: string, example: "Laura Gómez" }
+                tipoDocumento: { type: string, example: "TI" }
+                numeroDocumento: { type: string, example: "1098765201" }
+                fechaNacimiento: { type: string, format: date-time, example: "1995-08-20T00:00:00.000Z" }
+                comuna: { type: string, example: "Comuna 3" }
+                estratoSocial: { type: string, example: "E1" }
+                edad: { type: integer, example: 29 }
+                grupoEtnico: { type: string, example: "Indigena" }
+                telefonoContacto: { type: string, example: "3004567890" }
+                correoElectronico: { type: string, example: "laura.gomez@example.com" }
+                direccion: { type: string, example: "Carrera 45 #78-90" }
+                esMadreCabeza: { type: boolean, example: false }
+                numeroHijos: { type: integer, example: 0 }
+                conviveConOtrasPersonas: { type: boolean, example: true }
+                conQuienesConvive: { type: string, example: "Padres y hermanos" }
+                nivelEducativo: { type: string, example: "Universitaria" }
+                tieneEmpleo: { type: boolean, example: true }
+                actividadLaboral: { type: string, example: "Diseñadora gráfica freelance" }
+                fuenteIngresos: { type: string, example: "Trabajo independiente" }
+                areasApoyo:
+                  type: array
+                  items: { type: string }
+                  example: ["CAPACITACION_Y_EMPLEO", "EMPRENDIMIENTO"]
+                otrasAreas: { type: string, example: "Asesoría legal" }
+                tieneApoyoGubernamental: { type: boolean, example: false }
+                tipoApoyoGubernamental: { type: string, nullable: true, example: null }
+                motivacion: { type: string, example: "Deseo emprender un proyecto personal" }
+                tiempoSemanalDisponible: { type: string, example: "15 horas semanales" }
+                expectativas: { type: string, example: "Asesoramiento profesional y herramientas para emprender" }
+                aceptaTerminos: { type: boolean, example: true }
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno
+
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de mujer vulnerable
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno
+
+
+  /api/registro/refuerzo-escolar:
+    get:
+      tags: [Registro]
+      summary: Listar registros de refuerzo escolar
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro en refuerzo escolar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombreCompleto: { type: string, example: "Ernesto Pérez" }
+                fechaNacimiento: { type: string, format: date-time, example: "2011-05-15T00:00:00Z" }
+                comuna: { type: string, example: "Comuna 10" }
+                estratoSocial: { type: string, example: "E3" }
+                edad: { type: integer, example: 15 }
+                grupoEtnico: { type: string, example: "Rom_Gitano" }
+                institucionEducativa: { type: string, example: "Colegio ABC" }
+                cursoGrado: { type: string, example: "9" }
+                direccion: { type: string, example: "Calle 123, Barrio XYZ" }
+                nombreAcudiente: { type: string, example: "Ana Pérez" }
+                relacionNino: { type: string, example: "Madre" }
+                telefonoContacto: { type: string, example: "3012345671" }
+                correoElectronico: { type: string, example: "ana.perez@example.com" }
+                areasAyuda:
+                  type: array
+                  items: { type: string }
+                  example: ["Matemáticas", "Lectura y comprensión", "Inglés"]
+                otrasAreas: { type: string, example: "Tecnologías de la información" }
+                refuerzoPrevio: { type: boolean, example: true }
+                dificultadesAcademicas: { type: string, example: "Problemas con matemáticas y lectura" }
+                disponibilidad: { type: string, example: "Lunes a Viernes, 3:00 PM - 5:00 PM" }
+                accesoMateriales: { type: boolean, example: true }
+                apoyoHabitos: { type: boolean, example: true }
+                motivacion: { type: string, example: "Me gustaría mejorar mis notas y aprender más en las materias" }
+                expectativas: { type: string, example: "Espero mejorar mis calificaciones y aprender de forma más divertida" }
+                aceptaTerminos: { type: boolean, example: true }
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de refuerzo escolar
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno
+
+  /api/registro/seguridad-alimentaria:
+    get:
+      tags: [Registro]
+      summary: Listar registros de seguridad alimentaria
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro en seguridad alimentaria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombreCompleto: { type: string, example: "Jorge Castillo" }
+                tipoDocumento: { type: string, example: "CC" }
+                numeroDocumento: { type: string, example: "1022334455" }
+                fechaNacimiento: { type: string, format: date, example: "1979-06-10" }
+                edad: { type: integer, example: 45 }
+                telefonoContacto: { type: string, example: "3199876543" }
+                correoElectronico: { type: string, example: "jorge.castillo@example.com" }
+                direccion: { type: string, example: "Carrera 60 #45-12" }
+                barrio: { type: string, example: "La Floresta" }
+                comuna: { type: string, example: "Comuna 11" }
+                estratoSocial: { type: string, example: "E2" }
+                grupoEtnico: { type: string, example: "Rom_Gitano" }
+                esAgricultor: { type: boolean, example: true }
+                tieneTierras: { type: boolean, example: true }
+                hectareas: { type: number, format: float, example: 5.0 }
+                pisoTermico: { type: string, example: "Cálido" }
+                tieneCultivo: { type: boolean, example: true }
+                tiposCultivo: { type: string, example: "Caña de azúcar, Sorgo" }
+                participacionPrevia: { type: boolean, example: true }
+                proyectosAnteriores: { type: string, example: "Red Rural 2019" }
+                tieneRiego: { type: boolean, example: true }
+                tieneHerramientas: { type: boolean, example: true }
+                tiposHerramientas: { type: string, example: "Tractor, Arado, Machete" }
+                tieneAsistenciaTecnica: { type: boolean, example: true }
+                motivacion: { type: string, example: "Expandir mi finca y mejorar la comercialización." }
+                tiempoSemanal: { type: string, example: "35 horas" }
+                expectativas: { type: string, example: "Financiamiento y acceso a tecnología." }
+                aceptaTerminos: { type: boolean, example: true }
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "401":
+          description: No autenticado
+        "500":
+          description: Error interno
+
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de seguridad alimentaria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno
+
+  /api/registro/semillero-innovacion:
+    get:
+      tags: [Registro]
+      summary: Listar registros de semillero de innovación
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro en semillero innovacion 
+      description: Crea un nuevo registro de participante para el programa Semillero Innovación.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroSemilleroInnovacion"
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de semillero de innovación
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno
+
+  /api/registro/software-factory:
+    get:
+      tags: [Registro]
+      summary: Listar registros de software factory
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro en Software Factory
+      description: Crear un nuevo registro de participantes en Software Factory.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroSoftwareFactory"
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de software factory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno
+
+  /api/registro/taller-steam:
+    get:
+      tags: [Registro]
+      summary: Listar registros de taller steam
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro para taller STEAM
+      description: Crear un nuevo participante en el programa Taller Steam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroTallerSteam"
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de taller steam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno
+
+  /api/registro/voluntariado:
+    get:
+      tags: [Registro]
+      summary: Listar registros de voluntariado
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro para Voluntariado
+      description: Crear un nuevo participante para el programa Voluntariado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroVoluntariado"
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de voluntariado
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno      
+
+  /api/registro/cultural:
+    get:
+      tags: [Registro]
+      summary: Listar registros del programa cultural
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro para Cultural
+      description: Crear un nuevo registro para el programa Cultural.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroCultural"
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de programa cultural
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno      
+
+  /api/registro/economia-plateada:
+    get:
+      tags: [Registro]
+      summary: Listar registros del programa economía plateada
+      responses:
+        "200":
+          description: Lista de registros
+    post:
+      tags: [Registro]
+      summary: Crear registro para Economia Plateada
+      description: Crear nuevo registro para el programa Economia Plateada.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistroEconomiaPlateada"
+      responses:
+        "201":
+          description: Registro creado exitosamente
+        "400":
+          description: Error en validación o datos incompletos
+        "500":
+          description: Error interno
+    delete:
+      tags: [Registro]
+      summary: Eliminar un registro de programa economia plateada
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  example: 16
+      responses:
+        "200":
+          description: Registro eliminado exitosamente
+        "404":
+          description: Registro no encontrado
+        "500":
+          description: Error interno      

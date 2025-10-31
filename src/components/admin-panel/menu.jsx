@@ -8,6 +8,7 @@ import { getMenuList } from "@/lib/menu-list";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { CollapseMenuButton } from "@/components/admin-panel/collapse-menu-button";
+import { programs } from "@/data/programs";
 import {
   Tooltip,
   TooltipTrigger,
@@ -17,6 +18,15 @@ import {
 
 export function Menu({ isOpen }) {
   const pathname = usePathname();
+
+  // 🔍 Detectar si la ruta pertenece a un programa o evento
+  const programMatch = pathname.match(/\/admin\/(programas|eventos)\/([^/]+)/);
+  const programId = programMatch ? programMatch[2] : null;
+
+  // Buscar el programa actual en la lista de programas
+  const currentProgram = programs.find((p) => p.id === programId);
+  const activeColor = currentProgram ? currentProgram.color : "#2563eb"; // Azul por defecto
+
   const menuList = getMenuList(pathname);
 
   return (
@@ -53,12 +63,18 @@ export function Menu({ isOpen }) {
                         <Tooltip delayDuration={100}>
                           <TooltipTrigger asChild>
                             <Button
-                              variant={
-                                (active === undefined && pathname.startsWith(href)) || active
-                                  ? "secondary"
-                                  : "ghost"
-                              }
-                              className="w-full justify-start h-10"
+                              variant="ghost"
+                              className="w-full justify-start h-10 transition-colors"
+                              style={{
+                                backgroundColor:
+                                  ((active === undefined && pathname.startsWith(href)) || active)
+                                    ? activeColor
+                                    : "transparent",
+                                color:
+                                  ((active === undefined && pathname.startsWith(href)) || active)
+                                    ? "white"
+                                    : "inherit",
+                              }}
                               asChild
                             >
                               <Link href={href}>
@@ -96,6 +112,7 @@ export function Menu({ isOpen }) {
                         }
                         submenus={submenus}
                         isOpen={isOpen}
+                        activeColor={activeColor}
                       />
                     )}
                   </li>

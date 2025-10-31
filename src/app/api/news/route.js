@@ -1,7 +1,7 @@
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { PrismaClient } from "@prisma/client";
-import { existsSync } from "fs";
+import { existsSync, unlinkSync } from "fs";
 import { getToken } from "next-auth/jwt";
 
 
@@ -23,7 +23,14 @@ export async function POST(req) {
     const formData = await req.formData();
     const title = formData.get("title");
     const content = formData.get("content") || "";
-    const images = formData.getAll("images");
+
+    let images = formData.getAll("images") || [];
+
+    if (images.length > 5) {
+      return new Response("Máximo 5 imágenes permitidas",  { status: 400 });
+    }
+
+
 
     let imagePaths = [];
 
@@ -63,7 +70,7 @@ export async function POST(req) {
 export async function GET() {
   try {
     const posts = await prisma.post.findMany({
-      orderBy: { id: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return new Response(JSON.stringify(posts), {

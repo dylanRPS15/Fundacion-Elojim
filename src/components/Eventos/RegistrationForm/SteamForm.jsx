@@ -52,14 +52,13 @@ export default function SteamForm({ program, onClose }) {
 
   // Usamos el hook useFormSubmit
   const { isSubmitting, handleSubmit } = useFormSubmit({
-    programId: "taller-steam", // Un ID único para este programa
+    programId: "taller-steam",
     onSuccess: onClose,
     successDescription: `Te has inscrito correctamente como voluntario en ${program.title}.`,
-    // Aquí podrías añadir un validationFn si necesitas validaciones extra en el frontend
   });
 
   const handleChange = (e) => {
-    const { name, value } = e.target; // Ya no necesitas `type` ni `checked` aquí
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,

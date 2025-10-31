@@ -14,7 +14,7 @@ export default function Programas() {
 
   useEffect(() => {
     if (status !== "loading" && !session) {
-      router.push("/access-denied");
+      router.push("/programas/access-denied");
     }
   }, [session, status, router]);
 

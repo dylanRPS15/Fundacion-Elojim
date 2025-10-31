@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { EstratoSocial, GrupoEtnico } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
+import { sendRegistroUpdate } from "../stream/route"; // 🔹 Importa el emisor SSE
+import { sendEventoUpdate } from "@/app/api/inscripciones-evento/stream/route";
 
 const ESTRATOS = Object.values(EstratoSocial);
 const GRUPOS_ETNICOS_VALIDOS = Object.values(GrupoEtnico);
@@ -97,6 +99,12 @@ export async function POST(request) {
       },
     });
 
+    sendRegistroUpdate({
+              action: "created",
+              programId: "refuerzo-escolar",
+              userId: userId,
+            });
+
     return NextResponse.json(nuevoRegistro, { status: 201 });
   } catch (error) {
     console.error("Error al registrar Refuerzo Escolar:", error);
@@ -139,9 +147,44 @@ export async function DELETE(req) {
       return new Response("Registro no encontrado", { status: 404 });
     }
 
-    await prisma.registroRefuerzoEscolar.delete({
-      where: { id },
+    // Obtener las inscripciones que se van a eliminar (para actualizar contadores)
+    const inscripciones = await prisma.inscripcionPorEvento.findMany({
+      where: {
+        programId: "refuerzo-escolar",
+        userId: registro.userId,
+      },
+      select: { id: true, eventoId: true },
     });
+
+    await prisma.$transaction([
+      prisma.inscripcionPorEvento.deleteMany({
+        where: { programId: "refuerzo-escolar", userId: registro.userId },
+      }),
+      prisma.registroRefuerzoEscolar.delete({ where: { id } }),
+       // Decrementar contador "registered" en cada evento afectado
+      ...inscripciones.map((i) =>
+        prisma.evento.update({
+          where: { id: i.eventoId },
+          data: { registered: { decrement: 1 } },
+        })
+      ),
+    ]);
+
+    sendRegistroUpdate({
+          action: "deleted",
+          programId: "refuerzo-escolar",
+          userId: registro.userId,
+        });
+
+    for (const insc of inscripciones) {
+          sendEventoUpdate({
+            action: "deleted",
+            eventoId: insc.eventoId,
+            programId: "refuerzo-escolar",
+            inscripcionId: insc.id,
+            userId: registro.userId,
+          });
+        }
 
     return new Response("Registro eliminado exitosamente", { status: 200 });
   } catch (error) {

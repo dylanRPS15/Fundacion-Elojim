@@ -61,7 +61,7 @@ export default function SoftwareFactoryForm({ program, onClose }) {
   const { isSubmitting, handleSubmit } = useFormSubmit({
     programId: "software-factory", // <--- ¡Importante! Nuevo programId
     onSuccess: onClose,
-    successDescription: `Te has inscrito correctamente en la factoría de software.`,
+    successDescription: `Te has inscrito correctamente en ${program.title}.`,
   });
 
   const handleChange = (e) => {
