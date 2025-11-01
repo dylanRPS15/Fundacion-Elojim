@@ -1,4 +1,6 @@
-// app/api/refuerzo-escolar/route.ts
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { EstratoSocial, GrupoEtnico } from "@prisma/client";

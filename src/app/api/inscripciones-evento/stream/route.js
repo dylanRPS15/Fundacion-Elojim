@@ -1,3 +1,6 @@
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 import { NextResponse } from "next/server";
 
 if (!globalThis.__SSE_EVENT_CLIENTS__) {
