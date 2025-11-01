@@ -1,6 +1,3 @@
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"
 import db from "@/libs/db"

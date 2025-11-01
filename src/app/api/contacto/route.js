@@ -1,6 +1,3 @@
-export const dynamic = 'force-dynamic'
-export const revalidate = 0
-
 import nodemailer from "nodemailer";
 
 function escapeHTML(str) {
