@@ -228,10 +228,3 @@ export async function DELETE(req) {
   }
 }
 
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "1mb",
-    },
-  },
-};

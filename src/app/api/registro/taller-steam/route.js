@@ -195,12 +195,3 @@ export async function DELETE(req) {
     return new Response("Error interno al eliminar registro", { status: 500 });
   }
 }
-
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: "1mb",
-    },
-  },
-};
