@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
 "use client";
 
 import { useState, useEffect } from "react";
