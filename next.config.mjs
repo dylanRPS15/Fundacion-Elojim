@@ -12,7 +12,6 @@ const nextConfig = {
 
   // ✅ Configuración moderna sin turbopack
   webpack: (config, { isServer }) => {
-    // Configuración de alias
     config.resolve.alias = {
       ...config.resolve.alias,
       "@": path.resolve(__dirname, "src"),
@@ -20,10 +19,8 @@ const nextConfig = {
     return config;
   },
 
-  // ✅ Ajustes para despliegue en Vercel (sin romper nada)
+  // ✅ Ajustes seguros para Vercel
   output: "standalone",
-  dynamicParams: true,
-  generateStaticParams: false,
   staticPageGenerationTimeout: 180,
 
   experimental: {
