@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +23,6 @@ export default function ResetPasswordPage() {
     if (!token) toast.error("Token inválido o inexistente.");
   }, [token]);
 
-  // ✅ Validaciones visuales
   const validations = {
     minLength: /.{8,}/.test(password),
     hasUpper: /[A-Z]/.test(password),
@@ -66,7 +65,6 @@ export default function ResetPasswordPage() {
     setLoading(false);
   };
 
-  // 🎨 Componente de ítem de validación
   const ValidationItem = ({ label, valid }) => (
     <motion.div
       initial={{ opacity: 0, x: -10 }}
@@ -94,7 +92,6 @@ export default function ResetPasswordPage() {
 
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Campo de nueva contraseña */}
             <div>
               <Input
                 type="password"
@@ -105,7 +102,6 @@ export default function ResetPasswordPage() {
               />
             </div>
 
-            {/* Lista de validaciones animada */}
             <motion.div
               className="bg-gray-50 rounded-lg p-3 border border-gray-200 space-y-2"
               initial={{ opacity: 0, y: -10 }}
@@ -125,7 +121,6 @@ export default function ResetPasswordPage() {
               />
             </motion.div>
 
-            {/* Confirmar contraseña */}
             <div>
               <Input
                 type="password"
@@ -151,5 +146,13 @@ export default function ResetPasswordPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Cargando...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   );
 }
