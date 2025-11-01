@@ -1,3 +1,6 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 import { NextResponse } from "next/server";
 
 // 🧩 Usamos un globalThis compartido para evitar duplicaciones en hot-reload
