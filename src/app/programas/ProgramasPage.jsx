@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { programs } from "@/data/programs";
-import ProgramCard from "./ProgramCard";
-import ProgramDetail from "./ProgramDetail";
+import ProgramCard from "../../components/Eventos/ProgramCard";
+import ProgramDetail from "../../components/Eventos/ProgramDetail";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { usePrograms } from "@/context/ProgramContext";

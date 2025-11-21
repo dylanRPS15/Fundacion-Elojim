@@ -74,7 +74,7 @@ const LoginPage = () => {
               <CardHeader className="text-center pb-2">
                 <div className="flex justify-center mb-3">
                   <Image
-                    src="/images/logoFundación_circular2.png"
+                    src="/images/logoFundación_circular.png"
                     alt="Fundación Elojim Jadach"
                     width={70}
                     height={70}

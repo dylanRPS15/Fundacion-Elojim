@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
           <div className="flex flex-col items-center text-center p-8 border-b border-gray-100">
             <div className="relative w-20 h-20 mb-4">
               <Image
-                src="/images/logoFundación_circular2.png"
+                src="/images/logoFundación_circular.png"
                 alt="Fundación Elojim Jadach"
                 fill
                 className="object-cover rounded-full"

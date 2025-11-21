@@ -85,22 +85,22 @@ export default function Footer() {
             <div className="flex items-center gap-4">
               <SocialIcon
                 href="https://www.facebook.com/elojimjadach"
-                src="/icons/facebook.svg"
+                src="/icons/Facebook.svg"
                 alt="Facebook"
               />
               <SocialIcon
                 href="https://x.com/elojimjadach?s=21"
-                src="/icons/x.svg"
+                src="/icons/X.svg"
                 alt="X"
               />
               <SocialIcon
                 href="https://www.instagram.com/elojim.jadach_fdn?igsh=MnVwOHphaG85a3Bv&utm_source=qr"
-                src="/icons/instagram.svg"
+                src="/icons/Instagram.svg"
                 alt="Instagram"
               />
               <SocialIcon
                 href="https://www.tiktok.com/@elojim.jadach?_t=ZS-8uO7nzo72rX&_r=1"
-                src="/icons/tiktok.svg"
+                src="/icons/Tiktok.svg"
                 alt="TikTok"
               />
             </div>

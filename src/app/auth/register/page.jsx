@@ -72,7 +72,7 @@ const RegisterPage = () => {
             <CardHeader className="text-center border-b border-gray-100 pb-6">
               <div className="flex justify-center mb-4">
                 <Image
-                  src="/images/logoFundación_circular2.png"
+                  src="/images/logoFundación_circular.png"
                   alt="Fundación Elojim Jadach"
                   width={90}
                   height={90}

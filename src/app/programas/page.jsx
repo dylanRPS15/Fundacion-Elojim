@@ -4,7 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { ProgramProvider } from "@/context/ProgramContext";
-import ProgramasPage from "@/components/Eventos/ProgramasPage";
+import ProgramasPage from "@/app/programas/ProgramasPage";
 import Navbar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 
