@@ -100,7 +100,7 @@ export default function Footer() {
               />
               <SocialIcon
                 href="https://www.tiktok.com/@elojim.jadach?_t=ZS-8uO7nzo72rX&_r=1"
-                src="/icons/Tiktok.svg"
+                src="/icons/TikTok.svg"
                 alt="TikTok"
               />
             </div>
