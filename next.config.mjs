@@ -7,7 +7,16 @@ const __dirname = path.dirname(__filename);
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["hebbkx1anhila5yf.public.blob.vercel-storage.com"],
+    domains: [
+      "hebbkx1anhila5yf.public.blob.vercel-storage.com",
+      "res.cloudinary.com",
+    ],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
+    ],
   },
 
   // ✅ Configuración moderna sin turbopack

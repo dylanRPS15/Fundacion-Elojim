@@ -14,6 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 export default function VoluntariadoPage() {
   const [registros, setRegistros] = useState([]);
@@ -124,6 +125,7 @@ export default function VoluntariadoPage() {
   }
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Programa de Voluntariado Social">
       <Breadcrumb>
         <BreadcrumbList>
@@ -373,5 +375,6 @@ export default function VoluntariadoPage() {
       programId="voluntariado"
     />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }

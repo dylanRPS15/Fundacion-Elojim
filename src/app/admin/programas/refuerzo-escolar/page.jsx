@@ -14,6 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 export default function RefuerzoEscolarPage() {
   const [registros, setRegistros] = useState([]);
@@ -125,6 +126,7 @@ export default function RefuerzoEscolarPage() {
   const cursos = [...new Set(registros.map((r) => r.cursoGrado))];
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Programa de Jornadas de Refuerzo Escolar">
       <Breadcrumb>
         <BreadcrumbList>
@@ -384,5 +386,6 @@ export default function RefuerzoEscolarPage() {
       programId="taller-steam"
     />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }

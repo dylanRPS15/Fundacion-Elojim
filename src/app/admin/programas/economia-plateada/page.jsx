@@ -14,6 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 export default function EconomiaPlateadaPage() {
   const [registros, setRegistros] = useState([]);
@@ -117,6 +118,7 @@ export default function EconomiaPlateadaPage() {
   }
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Programa de Economía Plateada">
       <Breadcrumb>
         <BreadcrumbList>
@@ -137,6 +139,7 @@ export default function EconomiaPlateadaPage() {
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
+      
 
       {/* Encabezado dinámico con color del programa */}
       {(() => {
@@ -366,5 +369,6 @@ export default function EconomiaPlateadaPage() {
       programId="economia-plateada"
     />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }

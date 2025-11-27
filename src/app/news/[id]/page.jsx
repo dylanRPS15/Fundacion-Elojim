@@ -1,23 +1,78 @@
 "use client";
 
-import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/NavBar";
 import Footer from "@/components/Footer";
 import Gallery from "../../../components/News/Gallery";
 import { motion } from "framer-motion";
 import { BookOpen, Image as ImageIcon, Sparkles } from "lucide-react";
 
-export default async function NewsDetailPage({ params }) {
-  const { id } = await params;
+export default function NewsDetailPage({ params }) {
+  const { id } = params;
 
-  const res = await fetch(`http://localhost:3000/api/news/${id}`, {
-    cache: "no-store",
-  });
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!res.ok) return notFound();
+  useEffect(() => {
+    async function loadPost() {
+      try {
+        const res = await fetch(`/api/news/${id}`, {
+          cache: "no-store",
+        });
 
-  const post = await res.json();
+        if (!res.ok) {
+          if (res.status === 404) {
+            setError("Noticia no encontrada.");
+          } else {
+            setError("Error al cargar la noticia.");
+          }
+          return;
+        }
 
+        const data = await res.json();
+        setPost(data);
+      } catch (err) {
+        console.error("Error cargando noticia:", err);
+        setError("Error al cargar la noticia.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (id) {
+      loadPost();
+    }
+  }, [id]);
+
+  // === ESTADOS DE CARGA / ERROR ===
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#fdfdfb] via-[#fafafa] to-[#f7f8fa] text-gray-800">
+        <Navbar />
+        <main className="flex-grow max-w-5xl mx-auto w-full px-4 md:px-6 pt-20 pb-10 flex items-center justify-center">
+          <p className="text-gray-600">Cargando noticia...</p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (error || !post) {
+    return (
+      <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#fdfdfb] via-[#fafafa] to-[#f7f8fa] text-gray-800">
+        <Navbar />
+        <main className="flex-grow max-w-5xl mx-auto w-full px-4 md:px-6 pt-20 pb-10 flex items-center justify-center">
+          <p className="text-red-500">
+            {error ?? "No se pudo encontrar la noticia."}
+          </p>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // === RENDER NORMAL CUANDO YA TENEMOS post ===
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#fdfdfb] via-[#fafafa] to-[#f7f8fa] text-gray-800">
       <Navbar />
@@ -50,11 +105,14 @@ export default async function NewsDetailPage({ params }) {
               </div>
               <p className="text-gray-300 italic text-xs tracking-wide">
                 Publicado el{" "}
-                {new Date(post.createdAt || Date.now()).toLocaleDateString("es-CO", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
+                {new Date(post.createdAt || Date.now()).toLocaleDateString(
+                  "es-CO",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
               </p>
             </motion.div>
           </header>
@@ -101,7 +159,7 @@ export default async function NewsDetailPage({ params }) {
                 </h2>
 
                 <div className="rounded-2xl border border-amber-400/20 bg-[#ffffff]/5 shadow-lg p-4 md:p-6">
-                  <Gallery images={post.images.map((image) => `/${image}`)} />
+                  <Gallery images={post.images} />
                 </div>
               </div>
             </motion.section>

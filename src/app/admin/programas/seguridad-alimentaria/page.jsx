@@ -14,6 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 
 function calcularEdad(fechaNacimiento) {
@@ -128,6 +129,7 @@ export default function SeguridadAlimentariaPage() {
   const grupos = [...new Set(registros.map((r) => r.grupoEtnico))];
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Programa Seguridad Alimentaria">
       <Breadcrumb>
         <BreadcrumbList>
@@ -377,5 +379,6 @@ export default function SeguridadAlimentariaPage() {
       programId="seguridad-alimentaria"
     />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }

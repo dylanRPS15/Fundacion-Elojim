@@ -14,6 +14,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 
 export default function TallerSteamPage() {
@@ -122,6 +123,7 @@ export default function TallerSteamPage() {
   }
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Programa Taller STEAM + H">
       <Breadcrumb>
         <BreadcrumbList>
@@ -381,5 +383,6 @@ export default function TallerSteamPage() {
       programId="taller-steam"
     />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }

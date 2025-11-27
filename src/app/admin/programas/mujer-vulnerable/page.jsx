@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useToast } from "@/hooks/use-toast";
 import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 export default function MujerVulnerablePage() {
   const [registros, setRegistros] = useState([]);
@@ -124,6 +125,7 @@ export default function MujerVulnerablePage() {
   }
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Programa Mujer Vulnerable">
       <Breadcrumb>
         <BreadcrumbList>
@@ -373,5 +375,6 @@ export default function MujerVulnerablePage() {
         programId="mujer-vulnerable"
       />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }

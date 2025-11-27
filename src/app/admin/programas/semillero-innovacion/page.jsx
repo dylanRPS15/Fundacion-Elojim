@@ -5,7 +5,6 @@ import Link from "next/link";
 import { ContentLayout } from "@/components/admin-panel/content-layout";
 import { useToast } from "@/hooks/use-toast";
 import { ConfirmDeleteDialog } from "@/components/admin-panel/confirm-delete-dialog";
-import RegistroModal from "@/components/admin-panel/registro-modal";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,6 +13,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import RegistroModal from "@/components/admin-panel/registro-modal";
+import ProtectedAdmin from "@/components/ProtectedAdmin";
 
 export default function SemilleroInnovacionPage() {
   const [registros, setRegistros] = useState([]);
@@ -121,6 +122,7 @@ export default function SemilleroInnovacionPage() {
   }
 
   return (
+    <ProtectedAdmin>
     <ContentLayout title="Semillero de Innovación y Emprendimiento">
       <Breadcrumb>
         <BreadcrumbList>
@@ -370,5 +372,6 @@ export default function SemilleroInnovacionPage() {
       programId="semillero-innovacion"
     />
     </ContentLayout>
+    </ProtectedAdmin>
   );
 }
